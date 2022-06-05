@@ -41,8 +41,18 @@ class Game():
     def value(self, n): # returns the value of the terminal nodes as a tuple (if it is a tie the computer wins)
         O = 0
         X = 0
-        for i in range(len(n)):
-            if i != 0 and i != 7:
+        for i in range(0, 7):
+            if i == 0:
+                if n[i] == n[i + 1] == n[i + 2] == -1:
+                    X = X + 1
+                if n[i] == n[i + 1] == n[i + 2] == 1:
+                    O = O + 1
+            if i == 7:
+                if n[i] == n[i - 1] == n[i - 2] == -1:
+                    X = X + 1
+                if n[i] == n[i - 1] == n[i - 2] == 1:
+                    O = O + 1
+            else:
                 if n[i - 1] == n[i] == n[i + 1] == -1:
                     X = X + 1
                 if n[i - 1] == n[i] == n[i + 1] == 1:
@@ -64,37 +74,62 @@ class Game():
             n[x] = m
             return n
 
-    def play(self): # calculates the values of each child node based on first move
+    def simulation(self, current_state): # Simulates the entire game from the given node and returns the number of wins on each side
         listt = []
         listv = []
-        movalue, mxvalue, novalue, nxvalue, tovalue, txvalue = 0, 0, 0, 0, 0, 0
-        x = self.child_nodes(self.gamestate, 1)
-        for i in x:
-            m = self.child_nodes(i, -1)
-            movalue = movalue + novalue
-            mxvalue = mxvalue + nxvalue
-            novalue = 0
-            nxvalue = 0
-            print(mxvalue, movalue)
-            for j in m:
-                n = self.child_nodes(j, 1)
-                novalue = novalue + tovalue
-                nxvalue = nxvalue + txvalue
-                tovalue = 0
-                txvalue = 0
+        count_step = current_state.count(0)
+        movalue, mxvalue, tovalue, txvalue = 0, 0, 0, 0
+        if count_step == 4:
+            x = self.child_nodes(current_state, 1)
+            for i in x:
+                m = self.child_nodes(i, -1)
+                for j in m:
+                    n = self.child_nodes(j, 1)
+                    for k in n:
+                        k = [-1 if i == 0 else i for i in k]
+                        tovalue = self.value(k)[0]
+                        txvalue = self.value(k)[1]
+                        movalue = tovalue + movalue
+                        mxvalue = txvalue + mxvalue
+                        listt.append(k)
+                        listv.append([tovalue, txvalue])
+
+        if count_step == 3:
+            x = self.child_nodes(current_state, -1)
+            for i in x:
+                n = self.child_nodes(i, 1)
                 for k in n:
-                    k = [-1 if i == 0 else i for i in k]
+                    k = [-1 if i ==0 else i for i in k]
                     tovalue = self.value(k)[0]
                     txvalue = self.value(k)[1]
-                    listv.append([tovalue, txvalue])
+                    movalue = tovalue + movalue
+                    mxvalue = txvalue + mxvalue
                     listt.append(k)
-        return
-
+                    listv.append([tovalue, txvalue])
+        if count_step == 2:
+            x = self.child_nodes(current_state, 1)
+            for k in x:
+                k = [-1 if i == 0 else i for i in k]
+                tovalue = self.value(k)[0]
+                txvalue = self.value(k)[1]
+                movalue = tovalue + movalue
+                mxvalue = txvalue + mxvalue
+                listt.append(k)
+                listv.append([tovalue, txvalue])
+        if count_step == 1:
+            current_state = [-1 if i == 0 else i for i in current_state]
+            tovalue = self.value(current_state)[0]
+            txvalue = self.value(current_state)[1]
+            movalue = tovalue + movalue
+            mxvalue = txvalue + mxvalue
+            listt.append(current_state)
+            listv.append([tovalue, txvalue])
+        return movalue, mxvalue
 
 
 def main():
     g = Game()
-    print(g.play())
+    print(g.play([0, 1, -1, -1, -1, 1, 1, 1]))
 
 if __name__ == '__main__':
     main()
