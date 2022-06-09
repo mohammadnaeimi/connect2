@@ -5,7 +5,7 @@ import copy
 
 class Game():
     def __init__(self):
-        self.gamestate = [0, 1, 0, -1, -1, 0, 1, 0] # the state where the games starts
+        self.gamestate = [0, 0, 0, 0, 0, 0, 0, 0] # the state where the games starts
         return
 
     def intial_state(self):
@@ -19,17 +19,17 @@ class Game():
         intital_state[indice[1]] = intital_state[indice[3]] = -1
         return intital_state
 
-    def child_nodes(self, n, m): # returns a list of all possible actions (m = 1 for O(Computer) and m = -1 for X(User))
+    def child_nodes(self, state, m): # returns a list of all possible actions (m = 1 for O(Computer) and m = -1 for X(User))
         listl = []
-        x = copy.deepcopy(n)
-        for i in range(len(n)):
-            if n[i] == 0:
+        x = copy.deepcopy(state)
+        for i in range(len(state)):
+            if state[i] == 0:
                 x[i] = m
                 listl.append(x)
-                x = copy.deepcopy(n)
+                x = copy.deepcopy(state)
         return listl
 
-    def value(self, n): # returns the value of the terminal nodes as a tuple
+    def value(self, n): # returns the value of the terminal nodes as a tuple (if it is a tie the computer wins)
         O, X = 0, 0
         for i in range(len(n)):
             if i != 0 and i != 7:
@@ -54,7 +54,7 @@ class Game():
             n[x] = m
             return n
 
-    def simulation(self, current_state): # Simulates the entire game from the given node and returns the number of wins on each side and the child nodes (6 moves deep)
+    def simulation(self, current_state): # Simulates the entire game from the given node and returns the number of wins on each side and the child nodes (5 moves deep)
         listm, listn, listt, listh, listp = [], [], [], [], []
         state = []
         count_step = current_state.count(0)
@@ -90,7 +90,7 @@ class Game():
                     hxvalue = mxvalue + hxvalue
                     listm.append([movalue, mxvalue])
                 listh.append([hovalue, hxvalue])
-                state.append(x)
+            state.append(x)
         if count_step == 5:
             x = self.child_nodes(current_state, -1)
             for i in x:
@@ -169,13 +169,13 @@ class Game():
             state.append(current_state)
         return listh, state
 
-    def check_winner(self, n): #Bob is -1 and Alice is 1
+    def check_winner(self, finalstate): #Bob is -1 and Alice is 1
         check_list = []
-        for i in range(len(n)):
+        for i in range(len(finalstate)):
             if i != 0 and i != 7:
-                if n[i - 1] + n[i] + n[i + 1] == -3:
+                if finalstate[i - 1] + finalstate[i] + finalstate[i + 1] == -3:
                     check_list.append(-1)
-                if n[i - 1] + n[i] + n[i + 1] == 3:
+                if finalstate[i - 1] + finalstate[i] + finalstate[i + 1] == 3:
                     check_list.append(1)
         if sum(check_list) < 0:
             return 'the winner is Bob'
@@ -184,17 +184,41 @@ class Game():
         else:
             return 'it is a tie'
 
-    def play(self, intital_state): #for now: starts the game with printing the intitial state, then appends the results into a list
+    def selection(self, state):
+        list_value = []
+        value = self.simulation(state)[0]
+        state = self.simulation(state)[1]
+        for i in value:
+            list_value.append(i[0])
+        return state[0][list_value.index(max(list_value))]
 
-
-        return
+    def play(self): #gets the best first action, gets the user turn and continues the game till the end, you will never win this game
+        self.gamestate[random.randint(1, 5)] = 1
+        s1 = self.gamestate
+        print(s1)
+        self.gamestate = self.get_action(s1, -1)
+        s2 = self.gamestate
+        print(s2)
+        s3 = self.selection(s2)
+        print(s3)
+        self.gamestate = self.get_action(s3, -1)
+        s4 = self.gamestate
+        print(s4)
+        s5 = self.selection(s4)
+        print(s5)
+        self.gamestate = self.get_action(s5, -1)
+        s6 = self.gamestate
+        s7 = self.selection(s6)
+        print(s7)
+        self.gamestate = self.get_action(s7, -1)
+        return self.check_winner(self.gamestate)
 
 
 
 
 def main():
     g = Game()
-    
+    print(g.play())
 
 if __name__ == '__main__':
     main()
