@@ -29,7 +29,7 @@ class Game():
                 x = copy.deepcopy(n)
         return listl
 
-    def value(self, n): # returns the value of the terminal nodes as a tuple (if it is a tie the computer wins)
+    def value(self, n): # returns the value of the terminal nodes as a tuple
         O, X = 0, 0
         for i in range(len(n)):
             if i != 0 and i != 7:
