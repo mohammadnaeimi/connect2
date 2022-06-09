@@ -192,25 +192,20 @@ class Game():
             list_value.append(i[0])
         return state[0][list_value.index(max(list_value))]
 
-    def play(self): #selects the best first action, gets the user turn and continues the game till the end, you can never win this game
+        def play(self): #gets the best first action, gets the user turn and continues the game till the end, you will never win this game
         self.gamestate[random.randint(1, 5)] = 1
         s1 = self.gamestate
         print(s1)
         self.gamestate = self.get_action(s1, -1)
         s2 = self.gamestate
         print(s2)
-        s3 = self.selection(s2, 1)
-        print(s3)
-        self.gamestate = self.get_action(s3, -1)
-        s4 = self.gamestate
-        print(s4)
-        s5 = self.selection(s4, 1)
-        print(s5)
-        self.gamestate = self.get_action(s5, -1)
-        s6 = self.gamestate
-        s7 = self.selection(s6, 1)
-        print(s7)
-        self.gamestate = self.get_action(s7, -1)
+        n = 3
+        while n > 0:
+            s = self.selection(self.gamestate, 1)
+            print(s)
+            self.gamestate = self.get_action(s, -1)
+            print(self.gamestate)
+            n = n - 1
         return self.check_winner(self.gamestate)
 
 
