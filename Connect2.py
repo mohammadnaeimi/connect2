@@ -1,6 +1,6 @@
 import numpy as np
 import random
-import time
+from time import sleep
 import copy
 
 class Game():
@@ -30,27 +30,16 @@ class Game():
         return listl
 
     def value(self, n): # returns the value of the terminal nodes as a tuple (if it is a tie the computer wins)
-        O = 0
-        X = 0
-        for i in range(0, 8):
-            if i == 0:
-                if n[i] == n[i + 1] == n[i + 2] == -1:
-                    X = X + 1
-                if n[i] == n[i + 1] == n[i + 2] == 1:
-                    O = O + 1
-            if i == 7:
-                if n[i] == n[i - 1] == n[i - 2] == -1:
-                    X = X + 1
-                if n[i] == n[i - 1] == n[i - 2] == 1:
-                    O = O + 1
-            else:
+        O, X = 0, 0
+        for i in range(len(n)):
+            if i != 0 and i != 7:
                 if n[i - 1] == n[i] == n[i + 1] == -1:
                     X = X + 1
                 if n[i - 1] == n[i] == n[i + 1] == 1:
                     O = O + 1
         if O == X:
             O = 1
-            X = 0
+            X = 1
         if O > X:
             O = 1
             X = 0
@@ -65,10 +54,70 @@ class Game():
             n[x] = m
             return n
 
-    def simulation(self, current_state): # Simulates the entire game from the given node and returns the number of wins on each side and the child nodes
-        listm, listn, listt = [], [], []
+    def simulation(self, current_state): # Simulates the entire game from the given node and returns the number of wins on each side and the child nodes (5 moves deep)
+        listm, listn, listt, listh, listp = [], [], [], [], []
         state = []
         count_step = current_state.count(0)
+        if count_step == 6:
+            x = self.child_nodes(current_state, 1)
+            for i in x:
+                h = self.child_nodes(i, -1)
+                hovalue, hxvalue = 0, 0
+                for j in h:
+                    m = self.child_nodes(j, 1)
+                    movalue, mxvalue = 0, 0
+                    for k in m:
+                        n = self.child_nodes(k, -1)
+                        novalue, nxvalue = 0, 0
+                        for l in n:
+                            p = self.child_nodes(l, 1)
+                            povalue, pxvalue = 0, 0
+                            for l in p:
+                                l = [-1 if i == 0 else i for i in l]
+                                tovalue = self.value(l)[0]
+                                txvalue = self.value(l)[1]
+                                listt.append([tovalue, txvalue])
+                                povalue = povalue + tovalue
+                                pxvalue = pxvalue + txvalue
+                                listt.append([tovalue, txvalue])
+                            novalue = novalue + povalue
+                            nxvalue = nxvalue + pxvalue
+                            listp.append([povalue, pxvalue])
+                        movalue = movalue + novalue
+                        mxvalue = mxvalue + nxvalue
+                        listn.append([novalue, nxvalue])
+                    hovalue = movalue + hovalue
+                    hxvalue = mxvalue + hxvalue
+                    listm.append([movalue, mxvalue])
+                listh.append([hovalue, hxvalue])
+                state.append(x)
+        if count_step == 5:
+            x = self.child_nodes(current_state, -1)
+            for i in x:
+                h = self.child_nodes(i, 1)
+                hovalue, hxvalue = 0, 0
+                for j in h:
+                    m = self.child_nodes(j, -1)
+                    movalue, mxvalue = 0, 0
+                    for k in m:
+                        n = self.child_nodes(k, 1)
+                        novalue, nxvalue = 0, 0
+                        for l in n:
+                            l = [-1 if i == 0 else i for i in l]
+                            tovalue = self.value(l)[0]
+                            txvalue = self.value(l)[1]
+                            listt.append([tovalue, txvalue])
+                            novalue = novalue + tovalue
+                            nxvalue = nxvalue + txvalue
+                            listt.append([tovalue, txvalue])
+                        movalue = movalue + novalue
+                        mxvalue = mxvalue + nxvalue
+                        listn.append([novalue, nxvalue])
+                    hovalue = movalue + hovalue
+                    hxvalue = mxvalue + hxvalue
+                    listm.append([movalue, mxvalue])
+                listh.append([hovalue, hxvalue])
+                state.append(x)
         if count_step == 4:
             x = self.child_nodes(current_state, 1)
             for i in x:
@@ -88,9 +137,8 @@ class Game():
                     movalue = movalue + novalue
                     mxvalue = mxvalue + nxvalue
                     listn.append([novalue, nxvalue])
-                listm.append([movalue, mxvalue])
+                listh.append([movalue, mxvalue])
             state.append(x)
-
         if count_step == 3:
             x = self.child_nodes(current_state, -1)
             for i in x:
@@ -103,7 +151,7 @@ class Game():
                     movalue = tovalue + movalue
                     mxvalue = txvalue + mxvalue
                     listt.append([tovalue, txvalue])
-                listm.append([movalue, mxvalue])
+                listh.append([movalue, mxvalue])
             state.append(x)
         if count_step == 2:
             x = self.child_nodes(current_state, 1)
@@ -111,73 +159,42 @@ class Game():
                 k = [-1 if i == 0 else i for i in k]
                 tovalue = self.value(k)[0]
                 txvalue = self.value(k)[1]
-                listm.append([tovalue, txvalue])
+                listh.append([tovalue, txvalue])
             state.append(x)
         if count_step == 1:
             current_state = [-1 if i == 0 else i for i in current_state]
             tovalue = self.value(current_state)[0]
             txvalue = self.value(current_state)[1]
-            listm.append([tovalue, txvalue])
+            listh.append([tovalue, txvalue])
             state.append(current_state)
-        return listm, state
+        return listh, state
 
-    def check_winner(self, n):
+    def check_winner(self, n): #Bob is -1 and Alice is 1
+        check_list = []
         for i in range(len(n)):
-            if i == 0:
-                if n[i] == n[i + 1] == n[i + 2] == -1:
-                    return 'the winner is Bob'
-                if n[i] == n[i + 1] == n[i + 2] == 1:
-                    return 'the winner is Alice'
-
-            if i == 7:
-                if n[i - 2] == n[i - 1] == n[i] == -1:
-                    return 'the winner is Bob'
-                if n[i - 2] == n[i - 1] == n[i] == 1:
-                    return 'the winner is Alice'
-            else:
-                if n[i] == n[i + 1] == n[i + 2] == -1:
-                    return 'the winner is Bob'
-                if n[i] == n[i + 1] == n[i + 2] == 1:
-                    return 'the winner is Alice'
-        else:
+            if i != 0 and i != 7:
+                if n[i - 1] + n[i] + n[i + 1] == -3:
+                    check_list.append(-1)
+                if n[i - 1] + n[i] + n[i + 1] == 3:
+                    check_list.append(1)
+        if sum(check_list) < 0:
+            return 'the winner is Bob'
+        if sum(check_list) > 0:
             return 'the winner is Alice'
-
+        else:
+            return 'it is a tie'
 
     def play(self, intital_state): #for now: starts the game with printing the intitial state, then appends the results into a list
-        listx = []
-        listx1 = []
-        x = intital_state
-        print(x)
-        print('it Alice turn')
-        listvalue, liststate = self.simulation(x)[0], self.simulation(x)[1]
-        for i in listvalue:
-            listx.append(i[0])
-        maxindex = [i for i, j in enumerate(listx) if j == max(listx)]
-        next_state = copy.deepcopy(liststate[0][random.choice(maxindex)])
-        print(next_state)
-        print('its Bob turn')
-        next_state1 = self.get_action(next_state, -1)
-        print(next_state1)
-        print('its Alice turn')
-        listvalue, liststate = self.simulation(next_state1)[0], self.simulation(next_state1)[1]
-        for i in listvalue:
-            listx1.append(i[0])
-        maxindex = [i for i , j in enumerate(listx1) if j == max(listx1)]
-        next_state2 = copy.deepcopy(liststate[0][maxindex[0]])
-        print(next_state2)
-        print('its Bob turn')
-        print(self.simulation(next_state2)[1])
-        result = self.check_winner(next_state2)
 
-        return result
+
+        return
 
 
 
 
 def main():
     g = Game()
-    initial_state = g.intial_state()
-    print(g.play(initial_state))
+    
 
 if __name__ == '__main__':
     main()
