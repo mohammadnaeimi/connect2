@@ -54,7 +54,7 @@ class Game():
             n[x] = m
             return n
 
-    def simulation(self, current_state): # Simulates the entire game from the given node and returns the number of wins on each side and the child nodes (5 moves deep)
+    def simulation(self, current_state): # Simulates the entire game from the given node and returns the number of wins on each side and the child nodes (6 moves deep)
         listm, listn, listt, listh, listp = [], [], [], [], []
         state = []
         count_step = current_state.count(0)
