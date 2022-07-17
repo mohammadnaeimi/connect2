@@ -6,7 +6,6 @@ import copy
 class Game():
     def __init__(self):
         self.gamestate = [0, 0, 0, 0, 0, 0, 0, 0] # the state where the games starts
-        return
 
     def intial_state(self):
         listl = [0, 1, 0, -1, -1, 0, 1, 0] # a functions that returns the initial state
